@@ -458,5 +458,6 @@ def process_video(video_info):
 
     video_id = video_info["video_id"]
     output_file = Path(os.path.join(os.getcwd(), 'static', 'final', f"{video_id}.mp4"))
+    output_file.mkdir(parents=True, exist_ok=True)
     final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
     logging.info(f"Generated output video: {output_file}")
