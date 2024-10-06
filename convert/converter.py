@@ -22,6 +22,7 @@ import os
 import subprocess
 import json
 import sys
+from django.conf import settings
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 imagemagick_path = r"/usr/local/bin/magick" # update image magic path
@@ -456,8 +457,23 @@ def process_video(video_info):
 
     final_video = concatenate_videoclips(video_segments)
 
-    video_id = video_info["video_id"]
-    output_file = Path(os.path.join(os.getcwd(), 'static', 'final', f"{video_id}.mp4"))
+    # video_id = video_info["video_id"]
+    # output_file = Path(os.path.join(os.getcwd(), 'static', 'final', f"{video_id}.mp4"))
+    output_file = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_info['video_id']}.mp4"))
+
     output_file.mkdir(parents=True, exist_ok=True)
-    final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
-    logging.info(f"Generated output video: {output_file}")
+
+    # Tải video để xử lý
+    # final_video = VideoFileClip(video_path)
+
+    # final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
+    # final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
+    # logging.info(f"Generated output video: {output_file}")
+
+    # Xử lý video với MoviePy
+    try:
+        # Tải video để xử lý
+        final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
+        logging.info(f"Generated output video: {output_file}")
+    except Exception as e:
+        logging.error(f"Có lỗi xảy ra khi ghi video: {e}")

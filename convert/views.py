@@ -13,6 +13,14 @@ import logging
 from django.http import JsonResponse
 from django.shortcuts import render
 
+import os
+import logging
+from pathlib import Path
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from rest_framework.decorators import api_view
+from moviepy.editor import VideoFileClip
+
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
@@ -93,4 +101,36 @@ def generate_video(request):
     return JsonResponse({'message': 'Video generated successfully!', 'video_path': generate_video_test()}, status=200)
 
     
+@api_view(['POST'])
+def upload_video(request):
+    if request.method == 'POST':
+        video_file = request.FILES.get('video')
 
+        if not video_file:
+            return Response({'error': 'No video file provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lưu video vào thư mục tạm thời
+        fs = FileSystemStorage()
+        filename = fs.save(video_file.name, video_file)
+        video_path = os.path.join(settings.MEDIA_ROOT, filename)
+
+        # Ghi video vào thư mục final với video_id
+        video_info = {'video_id': filename.split('.')[0]}  # Giả sử video_id là tên file mà không có đuôi
+        output_file = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_info['video_id']}.mp4"))
+
+        # Tạo thư mục nếu nó không tồn tại
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Xử lý video với MoviePy
+        try:
+            # Tải video để xử lý
+            final_video = VideoFileClip(video_path)
+            final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
+            logging.info(f"Generated output video: {output_file}")
+            return Response({'message': 'Video uploaded and processed successfully!', 'video_path': output_file.as_posix()}, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            logging.error(f"Có lỗi xảy ra khi ghi video: {e}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({'error': 'Invalid request method'}, status=status.HTTP_400_BAD_REQUEST)
