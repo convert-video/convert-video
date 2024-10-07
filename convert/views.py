@@ -12,7 +12,7 @@ import os
 import logging
 from django.http import JsonResponse
 from django.shortcuts import render
-
+from django.http import StreamingHttpResponse
 import os
 import logging
 from pathlib import Path
@@ -135,3 +135,21 @@ def upload_video(request):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response({'error': 'Invalid request method'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PreviewVideoView(APIView):
+    def get(self, request, video_id):
+        try:
+            video_path = os.path.join(os.getcwd(), "static", "final", f"{video_id}.mp4")
+            # Alternatively, if using MEDIA_ROOT:
+            # video_path = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_id}.mp4"))
+
+            if not os.path.exists(video_path):
+                return Response({"detail": "Video not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Use StreamingHttpResponse to stream the video
+            response = StreamingHttpResponse(open(video_path, 'rb'), content_type='video/mp4')
+            response['Content-Length'] = os.path.getsize(video_path)  # Optional: set content length for better behavior
+            return response
+        except Exception as e:
+            return Response({"detail": f"Error while trying to preview video: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
