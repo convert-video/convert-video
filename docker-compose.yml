@@ -10,7 +10,7 @@ services:
       - ./staticfiles:/app/staticfiles
       - ./uploads:/app/uploads
     ports:
-      - "8000"
+      - "11002:8000"
     image: conveterapp
     container_name: conveterapp
     command: 
