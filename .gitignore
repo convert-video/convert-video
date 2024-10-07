@@ -146,4 +146,8 @@ cython_debug/
 
 media/
 # docker-compose.yml
-# Dockerfile
+# 
+uploads/
+tmp/
+static/
+staticfiles/
