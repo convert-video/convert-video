@@ -32,6 +32,14 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+MAIN_APPS=[
+    'mainapps.video',
+    'mainapps.home',
+    'mainapps.accounts',
+    'mainapps.vidoe_text',
+    'mainapps.audio',
+]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,6 +50,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'convert.apps.ConvertConfig',
+    'djstripe',
+    'mainapps.video.apps.VideoConfig',
+    # 'mainapps.home',
+    'mainapps.accounts.apps.AccountsConfig',
+    # 'mainapps.vidoe_text',
+    # 'mainapps.audio',
 ]
 
 MIDDLEWARE = [
@@ -153,3 +167,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
+STRIPE_LIVE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+
+STRIPE_PRICING_TABLE_ID = "prctbl_1PzmCnEt5xiNvM25Ro8qIuJs"
+
+DJSTRIPE_WEBHOOK_SECRET = "whsec_xxx"
