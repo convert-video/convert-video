@@ -5,10 +5,10 @@ services:
     build: .
     volumes:
       - .:/app
-      - /app/static
       - ./static:/app/static
       - ./staticfiles:/app/staticfiles
       - ./uploads:/app/uploads
+      - ./media:/app/media
     ports:
       - "11002:8000"
     image: conveterapp

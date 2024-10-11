@@ -194,7 +194,7 @@ def upload_video_folder(request):
     return render(request, 'dir_upload.html')
 
 
-@login_required
+# @login_required
 def add_video_clips(request, textfile_id):
     text_file = get_object_or_404(TextFile, id=textfile_id)
     if text_file.user != request.user:

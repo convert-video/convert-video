@@ -1,4 +1,5 @@
 import json
+import random
 import threading
 from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib import messages
@@ -26,7 +27,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.management import call_command
 import io
 from django.core.files.base import ContentFile
-from mainapps.accounts.models import Credit,VlcPlan
+from mainapps.accounts.models import Credit, User,VlcPlan
 
 
 import boto3
@@ -36,8 +37,14 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 
 
-
-
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
+import threading
+from .serializers import BackgroundMusicSerializer
+from django.core.management import call_command
 
 
 import requests
@@ -137,10 +144,10 @@ def serve_file(request, file_name):
         response['Content-Disposition'] = f'attachment; filename="{file_name}"'
         return response
 
-@login_required  
-@check_credits_and_ownership(textfile_id_param='textfile_id', credits_required=1)
-def process_background_music(request, textfile_id):
-    
+# @login_required  
+# @check_credits_and_ownership(textfile_id_param='textfile_id', credits_required=1)
+def process_background_music(request, textfile_id=1):
+    print(787878778)
     # Run process_video command in a new thread
     def run_process_command(textfile_id):
         try:
@@ -149,8 +156,6 @@ def process_background_music(request, textfile_id):
             # Handle the exception as needed (e.g., log it)
             print(f"Error processing video: {e}")
 
-    
-    
     textfile = TextFile.objects.get(pk=textfile_id)
 
     musics=textfile.background_musics.all()
@@ -224,8 +229,23 @@ def process_background_music(request, textfile_id):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
-
-    return render(request,'vlc/add_music.html',{'textfile_id':textfile_id,'textfile':textfile,'musics':musics})
+    data = {
+            'textfile_id': textfile.id,
+            'textfile': {
+                'id': textfile.id,
+            },
+            'musics': [
+                {
+                    'id': music.id,
+                    'title': music.title,  # Replace with your Music model fields
+                    'url': music.file.url,  # Assuming there's a file field for music
+                }
+                for music in musics
+            ]
+        }
+    
+    # return JsonResponse(data)
+    return render(request,'vlc/add_music.html',{'textfile_id':textfile.id,'textfile':textfile,'musics':musics})
 
 
 def clean_progress_file(text_file_id):
@@ -278,8 +298,8 @@ def process_textfile(request, textfile_id):
     return redirect(f'/text/progress_page/build/{textfile_id}')
 
 
-@login_required
-@check_user_credits(minimum_credits_required=1)
+# @login_required
+# @check_user_credits(minimum_credits_required=1)
 def add_text(request):
     if request.method == 'POST':
         voice_id = request.POST.get('voiceid')
@@ -332,11 +352,22 @@ def add_text(request):
 #     text_file_obj= get_object_or_404(TextFile,id=textfile_id)
 #     return render(request,'vlc/frontend/VLSMaker/index.html',{"textfile_id":textfile_id,})
 
-@login_required
-@check_credits_and_ownership(textfile_id_param='textfile_id', credits_required=1)
+# @login_required
+# @check_credits_and_ownership(textfile_id_param='textfile_id', credits_required=1)
 def download_video(request,textfile_id,):
     text_file=TextFile.objects.get(pk=textfile_id)
-    user_credit = Credit.objects.get(user=request.user)
+    print(text_file)
+
+    print("=======")
+    users = list(User.objects.all())  # Convert the queryset to a list
+
+    print(users)
+
+    if not users:  # Check if there are any users
+        return JsonResponse({"error": "No users found."}, status=404)
+
+    bg_music=request.GET.get('bg_music',None)
+    return render(request,'vlc/download.html',{'textfile_id':textfile_id,'bg_music':bg_music,'text_file':text_file}, )
     if user_credit.credits > 0:
         bg_music=request.GET.get('bg_music',None)
         return render(request,'vlc/download.html',{'textfile_id':textfile_id,'bg_music':bg_music,'text_file':text_file}, )
@@ -373,3 +404,89 @@ def download_file_from_s3(request, file_key):
         except (NoCredentialsError, PartialCredentialsError):
             return HttpResponse("Credentials not available.", status=403)
     return HttpResponse(status=403)
+
+def validate_api_keyv(request):
+    if request.method == 'POST':
+        api_key = request.POST.get('eleven_labs_api_key', '')
+        voice_id = request.POST.get('voice_id')
+
+        # Try making a request to Eleven Labs API to validate the key
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+        headers = {"xi-api-key": api_key}
+        data = {
+            "text": "Test voice synthesis",
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.75
+            }
+        }
+
+        try:
+            response = requests.post(url, json=data, headers=headers)
+            
+            if response.status_code == 200:
+                return JsonResponse({'valid': True})
+            elif response.status_code == 401:
+                error_detail = response.json().get('detail', {})
+                if 'status' in error_detail and error_detail['status'] == 'quota_exceeded':
+                    return JsonResponse({
+                        'valid': False, 
+                        'error': f"Quota exceeded: {error_detail.get('message', 'Insufficient credits')}"
+                    })
+                else:
+                    return JsonResponse({'valid': False, 'error': "Invalid API key"})
+            else:
+                return JsonResponse({'valid': False, 'error':"Invalid Voice ID"})
+        except requests.exceptions.RequestException:
+            return JsonResponse({'valid': False, 'error': 'Error connecting to Eleven Labs API'})
+
+    return JsonResponse({'valid': False, 'error': 'Invalid request method'})
+
+
+@api_view(['POST'])
+def process_background_music_api(request, textfile_id):
+    textfile = get_object_or_404(TextFile, pk=textfile_id)
+
+    # Validate and deserialize input data
+    serializer = BackgroundMusicSerializer(data=request.data)
+    if serializer.is_valid():
+        no_of_mp3 = serializer.validated_data['no_of_mp3']
+        music_files = []
+        bg_musics = []
+        lines = []
+
+        for i in range(1, no_of_mp3 + 1):
+            bg_music = serializer.validated_data.get(f'bg_music_{i}')
+            if bg_music:
+                start_time = serializer.validated_data.get(f'from_when_{i}')
+                end_time = serializer.validated_data.get(f'to_when_{i}')
+                bg_level = serializer.validated_data.get(f'bg_level_{i}') / 1000.0  # Convert level
+
+                bg_music_instance = BackgroundMusic(
+                    text_file=textfile,
+                    music=bg_music,
+                    start_time=start_time,
+                    end_time=end_time,
+                    bg_level=bg_level
+                )
+                bg_musics.append(bg_music_instance)
+                lines.append(f"{bg_music.name} {start_time} {end_time} {bg_level}")
+
+        # Bulk create BackgroundMusic instances
+        if bg_musics:
+            BackgroundMusic.objects.bulk_create(bg_musics)
+
+        # Save the info to a text file
+        content = "\n".join(lines)
+        file_name = f'background_music_info_{textfile_id}_.txt'
+        textfile.bg_music_text.save(file_name, ContentFile(content))
+        textfile.save()
+
+        # Run music processor command in a separate thread
+        thread = threading.Thread(target=call_command, args=('music_processor', textfile_id))
+        thread.start()
+
+        return Response({"message": "Background music processed successfully."}, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

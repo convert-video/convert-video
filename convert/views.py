@@ -155,8 +155,10 @@ class PreviewVideoView(APIView):
             return Response({"detail": f"Error while trying to preview video: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-def process_background_music(request, textfile_id):
-    
+def process_background_music(request):
+    print("=======>")
+    textfile_id=1
+    print("process_background_music")
     # Run process_video command in a new thread
     def run_process_command(textfile_id):
         try:
@@ -241,4 +243,4 @@ def process_background_music(request, textfile_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-    return render(request,'vlc/add_music.html',{'textfile_id':textfile_id,'textfile':textfile,'musics':musics})
+    return render(request,'vlc/add_music.html',{'textfile_id':1,'textfile':textfile,'musics':musics})

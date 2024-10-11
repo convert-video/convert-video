@@ -6,7 +6,6 @@ __pycache__/
 test.txt
 # C extensions
 *.so
-migrations
 # Distribution / packaging
 .Python
 build/

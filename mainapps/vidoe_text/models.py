@@ -68,6 +68,7 @@ class AudioClip(models.Model):
     voice_id = models.CharField(max_length=255)
 
 class TextFile(models.Model):
+    
     user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,null=True,editable=False)
 
     text_file = models.FileField(upload_to=text_file_upload_path,null=True,blank=True)

@@ -52,10 +52,12 @@ INSTALLED_APPS = [
     'convert.apps.ConvertConfig',
     'djstripe',
     'mainapps.video.apps.VideoConfig',
-    # 'mainapps.home',
+    'mainapps.home.apps.HomeConfig',
     'mainapps.accounts.apps.AccountsConfig',
-    # 'mainapps.vidoe_text',
-    # 'mainapps.audio',
+    'mainapps.vidoe_text.apps.VidoeTextConfig',
+    'mainapps.audio.apps.AudioConfig',
+    'django_extensions',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -74,7 +76,7 @@ ROOT_URLCONF = 'converterapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'converterapp', 'templates')],
+        'DIRS': [BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -169,9 +171,39 @@ STATICFILES_DIRS = [
 ]
 
 DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
-STRIPE_LIVE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+# STRIPE_LIVE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Q8ceGCQ2Ys80qlSxSLi49Y18pn59ayq5V2Y4UMVQ4ErPpoGeuIQMQdFcAXZTH62saDSsQsiIfEb5JyhLxbIPGGt00pXV7c6b6')
+# STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Q8ceGCQ2Ys80qlSzJF2Q4L0vQqmilXaJXyGqp0sXkPyqnqKIaRViZ03CyDngq6YQYyteMVYuLEe0sszHhQki0F200BlD2JUOs')
+
+STRIPE_PRICING_TABLE_ID = "prctbl_1PzmCnEt5xiNvM25Ro8qIuJs"
+
+DJSTRIPE_WEBHOOK_SECRET = "whsec_xxx"
+
+ROOT_URLCONF = 'converterapp.urls'
+
+AUTH_USER_MODEL='accounts.User'
+
+DJSTRIPE_SECRET_KEY = os.getenv('STRIPE_TEST_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
 
-STRIPE_PRICING_TABLE_ID = "a"
+# DJSTRIPE_SECRET_KEY = STRIPE_TEST_SECRET_KEY  # For test mode
+# DJSTRIPE_LIVE_SECRET_KEY = STRIPE_LIVE_SECRET_KEY  # For live mode
 
-DJSTRIPE_WEBHOOK_SECRET = "b"
+# Optionally, set these to avoid using the database for keys
+DJSTRIPE_USE_NATIVE_JSONFIELD = True  # Based on your preference
+
+# DEFAULT_FILE_STORAGE='storages.backends.s3boto3.S3Boto3Storage'
+# AWS S3 configuration
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'vlsmlsaker'
+AWS_S3_REGION_NAME = 'eu-north-1'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_FILES_OVERWRITE=False
+STORAGES={
+    "default":{
+        'BACKEND':'storages.backends.s3boto3.S3Boto3Storage'
+    },
+    "staticfiles":{
+        'BACKEND':'storages.backends.s3boto3.S3Boto3Storage'
+    },
+}

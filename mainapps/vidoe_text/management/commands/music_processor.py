@@ -75,12 +75,22 @@ class Command(BaseCommand):
         parser.add_argument('text_file_id', type=int)
 
     def handle(self, *args, **kwargs):
+
+        print("start handle using command")
         text_file_id = kwargs['text_file_id']
+
+        print(f"text file id =====> {text_file_id}")
+
         self.text_file_instance = TextFile.objects.get(id=text_file_id)
+
+        print(self.text_file_instance)
+        print("==========")
+
         with self.text_file_instance.bg_music_text.open('r') as f:
             music_info = f.readlines()
             self.text_file_instance.track_progress(2)
         video_clip = self.load_video_from_instance(self.text_file_instance,'generated_final_video')
+
         video_duration = video_clip.duration
 
         # Load the original audio from the video
@@ -269,6 +279,9 @@ class Command(BaseCommand):
             
             video_file_field = getattr(text_file_instance, file_field)
             
+            print(video_file_field)
+            print("=======")
+
             if not video_file_field or not video_file_field.name:
                 raise ValueError(f"Video S3 key is empty for {file_field} in the text_file_instance.")
             
