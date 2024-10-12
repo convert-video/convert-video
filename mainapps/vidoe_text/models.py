@@ -68,6 +68,9 @@ class AudioClip(models.Model):
     voice_id = models.CharField(max_length=255)
 
 class TextFile(models.Model):
+
+    def __str__(self):
+        return f"TextFile: {self.text_file} (Voice ID: {self.voice_id})"
     
     user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL,null=True,editable=False)
 

@@ -1,7 +1,7 @@
 import datetime
 
 from rest_framework import serializers
-
+from django.contrib.auth import authenticate
 
 def check_expiry_month(value):
     if not 1 <= int(value) <= 12:
@@ -25,7 +25,7 @@ def check_payment_method(value):
         raise serializers.ValidationError("Invalid payment_method.")
 
 class CardInformationSerializer(serializers.Serializer):
-    card_number = max_length=150, required=True)
+    card_number = serializers.CharField(max_length=150, required=True)
     expiry_month = serializers.CharField(
         max_length=150,
         required=True,

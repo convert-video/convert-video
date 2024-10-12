@@ -29,14 +29,14 @@ class User(AbstractUser):
     api_key = models.CharField(max_length=255, blank=True, null=True)
     allowed_videos = models.IntegerField(default=0)  # Number of videos allowed based on subscription
     generated_videos = models.IntegerField(default=0)  # Track how many videos the user has generated
-    subscription = models.ForeignKey(
-        'djstripe.Subscription', null=True, blank=True, on_delete=models.SET_NULL,
-        help_text="The user's Stripe Subscription object, if it exists",
-    )
-    customer = models.ForeignKey(
-        'djstripe.Customer', null=True, blank=True, on_delete=models.SET_NULL,
-        help_text="The user's Stripe Customer object, if it exists"
-    )    
+    # subscription = models.ForeignKey(
+    #     'djstripe.Subscription', null=True, blank=True, on_delete=models.SET_NULL,
+    #     help_text="The user's Stripe Subscription object, if it exists",
+    # )
+    # customer = models.ForeignKey(
+    #     'djstripe.Customer', null=True, blank=True, on_delete=models.SET_NULL,
+    #     help_text="The user's Stripe Customer object, if it exists"
+    # )
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
@@ -80,12 +80,12 @@ class StripeSubscription(models.Model):
 
 class MyStripeModel(models.Model):
     name = models.CharField(max_length=100)
-    stripe_subscription = models.ForeignKey(StripeSubscription, null=True, blank=True,on_delete=models.SET_NULL)
+    # stripe_subscription = models.ForeignKey(StripeSubscription, null=True, blank=True,on_delete=models.SET_NULL)
 
 
 class Credit(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,related_name='credit', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product,null=True,blank=True, on_delete=models.SET_NULL)
+    # product = models.ForeignKey(Product,null=True,blank=True, on_delete=models.SET_NULL)
     credits = models.IntegerField(default=0)
     last_reset = models.DateTimeField(auto_now_add=True)
     @classmethod
