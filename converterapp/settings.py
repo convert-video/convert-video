@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -22,22 +22,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-1el(j44&(8mjy4)ah!3pqsm5uhqd$h1b93e4-#rlap-59)-nb8'
 
-IMAGEMAGICK_BINARY=r"/usr/local/bin/magick"
+IMAGEMAGICK_BINARY = r"/usr/local/bin/magick"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
-MAIN_APPS=[
+MAIN_APPS = [
     'mainapps.video',
     'mainapps.home',
     'mainapps.accounts',
     'mainapps.vidoe_text',
     'mainapps.audio',
+    'mainapps.payment'
 ]
 
 INSTALLED_APPS = [
@@ -56,8 +56,11 @@ INSTALLED_APPS = [
     'mainapps.accounts.apps.AccountsConfig',
     'mainapps.vidoe_text.apps.VidoeTextConfig',
     'mainapps.audio.apps.AudioConfig',
+    'mainapps.payment.apps.PaymentConfig',
     'django_extensions',
-    'storages'
+    'storages',
+    'djoser',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +79,7 @@ ROOT_URLCONF = 'converterapp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'templates'],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,17 +94,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'converterapp.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "booking",
+        "USER": "dbuser",
+        "PASSWORD": "user123",
+        "HOST": "db",
+        "PORT": "3306",
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -121,7 +133,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -132,7 +143,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -150,6 +160,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 
@@ -161,7 +172,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 # Alternatively, to allow all:
-CORS_ALLOW_ALL_ORIGINS = True   
+CORS_ALLOW_ALL_ORIGINS = True
 
 # This is where static files will be collected
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -174,13 +185,13 @@ DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
 # STRIPE_LIVE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Q8ceGCQ2Ys80qlSxSLi49Y18pn59ayq5V2Y4UMVQ4ErPpoGeuIQMQdFcAXZTH62saDSsQsiIfEb5JyhLxbIPGGt00pXV7c6b6')
 # STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Q8ceGCQ2Ys80qlSzJF2Q4L0vQqmilXaJXyGqp0sXkPyqnqKIaRViZ03CyDngq6YQYyteMVYuLEe0sszHhQki0F200BlD2JUOs')
 
-STRIPE_PRICING_TABLE_ID = "prctbl_1PzmCnEt5xiNvM25Ro8qIuJs"
+STRIPE_PRICING_TABLE_ID = "prctbl_1Q8xzVHYtd156QFY1DvXSVOC"
 
-DJSTRIPE_WEBHOOK_SECRET = "whsec_xxx"
+DJSTRIPE_WEBHOOK_SECRET = "whsec_61fecffc109bc29df79785924676e6c4a5aa5df5961865a88e7769957568caa8"
 
 ROOT_URLCONF = 'converterapp.urls'
 
-AUTH_USER_MODEL='accounts.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 DJSTRIPE_SECRET_KEY = os.getenv('STRIPE_TEST_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
@@ -198,12 +209,19 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'vlsmlsaker'
 AWS_S3_REGION_NAME = 'eu-north-1'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-AWS_S3_FILES_OVERWRITE=False
-STORAGES={
-    "default":{
-        'BACKEND':'storages.backends.s3boto3.S3Boto3Storage'
+AWS_S3_FILES_OVERWRITE = False
+STORAGES = {
+    "default": {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
     },
-    "staticfiles":{
-        'BACKEND':'storages.backends.s3boto3.S3Boto3Storage'
+    "staticfiles": {
+        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
     },
 }
+DJOSER = {
+    'LOGIN_FIELD': 'username',  # Đảm bảo trường đăng nhập là username nếu bạn dùng username
+}
+
+STRIPE_LIVE_SECRET_KEY = os.environ.get("STRIPE_LIVE_SECRET_KEY", "sk_test_51Q8w1aHYtd156QFYnztQn2RPM0bwZaXlVd4a4ASYskSQjz5dj0wXIzXmrPX3pQPvwqnhrJgKtR56TBRnRfr1i6iX00GvXYrtMt")
+STRIPE_TEST_SECRET_KEY = os.environ.get("STRIPE_TEST_SECRET_KEY", "sk_test_51Q8w1aHYtd156QFYnztQn2RPM0bwZaXlVd4a4ASYskSQjz5dj0wXIzXmrPX3pQPvwqnhrJgKtR56TBRnRfr1i6iX00GvXYrtMt")
+STRIPE_LIVE_MODE = False
