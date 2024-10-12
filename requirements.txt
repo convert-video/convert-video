@@ -13,3 +13,7 @@ djangorestframework==3.14.0
 dj-stripe
 boto3
 django-extensions
+mysqlclient
+mysql-python
+django-storages
+djoser
