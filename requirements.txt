@@ -10,3 +10,9 @@ uvicorn
 python-multipart
 django-cors-headers==3.13.0
 djangorestframework==3.14.0 
+dj-stripe
+boto3
+django-extensions
+mysqlclient
+django-storages
+djoser

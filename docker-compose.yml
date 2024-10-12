@@ -5,10 +5,10 @@ services:
     build: .
     volumes:
       - .:/app
-      - /app/static
       - ./static:/app/static
       - ./staticfiles:/app/staticfiles
       - ./uploads:/app/uploads
+      - ./media:/app/media
     ports:
       - "11002:8000"
     image: conveterapp
@@ -37,10 +37,41 @@ services:
     networks:
       - app_network
 
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'booking'
+      MYSQL_USER: 'dbuser'
+      MYSQL_PASSWORD: 'user123'
+      MYSQL_ROOT_PASSWORD: 'user123'
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: 'db123'
+    ports:
+      - '8088:80'
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+
 networks:
   app_network:
     driver: bridge
 
+volumes:
+  mysql_data:
 # user manager -> db, api autthen (login, logout, register)(user, pass)
 
 # strite -> api connect strite, api, paymenbt.
