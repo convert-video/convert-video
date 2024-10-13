@@ -7,7 +7,7 @@ admin.site.register(SubscriptionPlan)
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in User._meta.fields]
+    list_display = ('id', 'email', 'username', 'is_superuser', 'first_name')
     list_filter = ('is_active', 'is_staff')  # Example of filtering options
     search_fields = ('username', 'email')  # Add search functionality
     ordering = ('id',)

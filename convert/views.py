@@ -22,6 +22,7 @@ from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
 from moviepy.editor import VideoFileClip
 
+<<<<<<< HEAD
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.http import JsonResponse
@@ -31,18 +32,30 @@ from mainapps.payment.models import UserSubscription
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+=======
+from django.http import JsonResponse
+from django.views import View
+>>>>>>> fb1bdfd5ba3088f49b0a2d5b4743b082ec5f2bd2
 
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
+TMP_FOLDER = "tmp"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
+<<<<<<< HEAD
 from django.views.generic import TemplateView
 
 
 class IndexView(TemplateView):
     template_name = "index.html"
 
+=======
+class IndexView(View):
+    def get(self, request, *args, **kwargs):
+        data = {'status': 'success', 'message': "It's working"}
+        return JsonResponse(data, status=200)
+>>>>>>> fb1bdfd5ba3088f49b0a2d5b4743b082ec5f2bd2
 
 class VideoUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -94,6 +107,7 @@ class VideoUploadView(APIView):
 
             process_video(video_info)
 
+<<<<<<< HEAD
             return Response(
                 {
                     "message": "Files uploaded and processed successfully",
@@ -102,6 +116,14 @@ class VideoUploadView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
+=======
+            # Call the function
+            delete_all_files(UPLOAD_DIRECTORY)
+            delete_all_files(TMP_FOLDER)
+
+            return Response({"message": "Files uploaded and processed successfully", "video_info": video_info}, status=status.HTTP_201_CREATED)
+        
+>>>>>>> fb1bdfd5ba3088f49b0a2d5b4743b082ec5f2bd2
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -263,6 +285,7 @@ class PreviewVideoView(APIView):
             )
 
 
+<<<<<<< HEAD
 def process_background_music(request):
     print("=======>")
     textfile_id = 1
@@ -372,3 +395,14 @@ def process_background_music(request):
         "vlc/add_music.html",
         {"textfile_id": 1, "textfile": textfile, "musics": musics},
     )
+=======
+def delete_all_files(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
+            
+>>>>>>> fb1bdfd5ba3088f49b0a2d5b4743b082ec5f2bd2
