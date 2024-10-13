@@ -22,6 +22,7 @@ from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
 from moviepy.editor import VideoFileClip
 
+
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.http import JsonResponse
@@ -31,14 +32,23 @@ from mainapps.payment.models import UserSubscription
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+
 from django.http import JsonResponse
 from django.views import View
+
 
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
 TMP_FOLDER = "tmp"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
+
+from django.views.generic import TemplateView
+
+
+class IndexView(TemplateView):
+    template_name = "index.html"
+
 
 class IndexView(View):
     def get(self, request, *args, **kwargs):
@@ -95,12 +105,23 @@ class VideoUploadView(APIView):
 
             process_video(video_info)
 
+
+            return Response(
+                {
+                    "message": "Files uploaded and processed successfully",
+                    "video_info": video_info,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+
             # Call the function
             delete_all_files(UPLOAD_DIRECTORY)
             delete_all_files(TMP_FOLDER)
 
             return Response({"message": "Files uploaded and processed successfully", "video_info": video_info}, status=status.HTTP_201_CREATED)
         
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -262,6 +283,7 @@ class PreviewVideoView(APIView):
             )
 
 
+
 def process_background_music(request):
     print("=======>")
     textfile_id = 1
@@ -371,3 +393,14 @@ def process_background_music(request):
         "vlc/add_music.html",
         {"textfile_id": 1, "textfile": textfile, "musics": musics},
     )
+
+def delete_all_files(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
+            
+
