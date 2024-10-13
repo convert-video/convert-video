@@ -27,6 +27,7 @@ from django.views import View
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
+TMP_FOLDER = "tmp"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 class IndexView(View):
@@ -78,6 +79,10 @@ class VideoUploadView(APIView):
             }
 
             process_video(video_info)
+
+            # Call the function
+            delete_all_files(UPLOAD_DIRECTORY)
+            delete_all_files(TMP_FOLDER)
 
             return Response({"message": "Files uploaded and processed successfully", "video_info": video_info}, status=status.HTTP_201_CREATED)
         
@@ -158,92 +163,12 @@ class PreviewVideoView(APIView):
             return Response({"detail": f"Error while trying to preview video: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-def process_background_music(request):
-    print("=======>")
-    textfile_id=1
-    print("process_background_music")
-    # Run process_video command in a new thread
-    def run_process_command(textfile_id):
+def delete_all_files(directory):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
         try:
-            call_command('music_processor', textfile_id)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
         except Exception as e:
-            # Handle the exception as needed (e.g., log it)
-            print(f"Error processing video: {e}")
-
-    
-    
-    textfile = TextFile.objects.get(pk=textfile_id)
-
-    musics=textfile.background_musics.all()
-
-    if request.method == 'POST':
-        if textfile.background_musics:
-            for bg in BackgroundMusic.objects.filter(text_file=textfile):
-                bg.delete()
-        try:
-            # Fetch the TextFile instance
-            if textfile.user != request.user:
-                messages.error(request,'You Do Not have access to the Resources You Requested ')
-
-                return render(request,'permission_denied.html')
-        except TextFile.DoesNotExist:
-            return Http404("Text file not found")
-        no_of_mp3 = int(request.POST.get('no_of_mp3', 0))  # Number of MP3 files
-    
-        # Check if the necessary fields are present in TextFile
-        if not textfile.text_file:
-            return JsonResponse({"error": "Text file is missing."}, status=400)
-        music_files = [request.FILES.get(f'bg_music_{i}') for i in range(1, no_of_mp3 +1)]  # Adjust based on your inputs
-        start_times_str = {f'bg_music_{i}': request.POST.get(f'from_when_{i}') for i in range(1, no_of_mp3 +1)}
-        bg_levels = {f'bg_music_{i}': float(request.POST.get(f'bg_level_{i}'))/1000.0 for i in range(1, no_of_mp3 +1)}
-        end_times_str = {f'bg_music_{i}': request.POST.get(f'to_when_{i}') for i in range(1, no_of_mp3+1)}
-        start_times = [convert_to_seconds(time_str) for time_str in start_times_str.values()]
-        end_times = [convert_to_seconds(time_str) for time_str in end_times_str.values()]
-
-        # Save music files and their paths
-        music_paths = []
-        bg_musics=[]
-        for i, music_file in enumerate(music_files, start=1):
-            if music_file:
-                bg_music=BackgroundMusic(
-                        text_file=textfile,
-                        music=music_file,
-                        start_time=start_times[i-1],
-                        end_time=end_times[i-1],
-                        bg_level=bg_levels[f"bg_music_{i}"]
-
-                    )
-                
-                bg_musics.append(bg_music)
-                # Perform bulk creation
-        if bg_musics:
-            BackgroundMusic.objects.bulk_create(bg_musics)
-
-        lines = []
-        for bg_music in bg_musics:
-            start_time_str = bg_music.start_time
-            end_time_str = bg_music.end_time
-            bg_level=str(float(bg_music.bg_level))
-            lines.append(f"{bg_music.music.name} {start_time_str} {end_time_str} {bg_level}")
-
-        content = "\n".join(lines)
-        
-        # Save the content to a text file
-        file_name = f'background_music_info_{textfile_id}_.txt'
-
-        textfile.bg_music_text.save(file_name, ContentFile(content))
-        # textfile.bg_level=float(request.POST.get('bg_level'))/100.0
-        textfile.save()
-
-        try:
-            # call_command('music_processor', textfile_id)
-            # # Start the background process/
-            thread = threading.Thread(target=run_process_command, args=(textfile_id,))
-            thread.start()
-            return redirect(f'/text/progress_page/bg_music/{textfile_id}')
-
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-    return render(request,'vlc/add_music.html',{'textfile_id':1,'textfile':textfile,'musics':musics})
+            print(f"Error deleting file {file_path}: {e}")
+            
