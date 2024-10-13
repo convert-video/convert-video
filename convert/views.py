@@ -21,15 +21,18 @@ from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
 from moviepy.editor import VideoFileClip
 
+from django.http import JsonResponse
+from django.views import View
+
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
-from django.views.generic import TemplateView
-
-class IndexView(TemplateView):
-    template_name = 'index.html'
+class IndexView(View):
+    def get(self, request, *args, **kwargs):
+        data = {'status': 'success', 'message': "It's working"}
+        return JsonResponse(data, status=200)
 
 class VideoUploadView(APIView):
     def post(self, request):

@@ -3,7 +3,6 @@ from django.shortcuts import redirect, render
 # Create your views here.from django.shortcuts import redirect
 
 def home(request):
-    return redirect('/text')
     if request.user.is_authenticated:
         return redirect('/text')
     else:
