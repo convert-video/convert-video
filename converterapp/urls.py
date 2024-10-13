@@ -18,6 +18,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path, re_path
+from rest_framework.routers import DefaultRouter
+
+from mainapps.accounts.views import CustomUserCreateSerializer
+from mainapps.accounts.views import  CustomUserViewSet
+
+router = DefaultRouter()
+router.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
