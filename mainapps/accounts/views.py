@@ -1,8 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
-from django.contrib import messages
 from django.views.decorators.http import require_POST
-from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from mainapps.accounts.emails import send_user_password_email
@@ -10,11 +8,7 @@ from mainapps.accounts.models import Credit
 import stripe
 
 from django.contrib.auth import get_user_model
-from djstripe.settings import djstripe_settings
-from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.contrib import messages
 from django.db import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 
@@ -25,19 +19,15 @@ from django.contrib.auth import login as auth_login
 from django.db import IntegrityError
 import stripe
 from django.contrib import messages
-from django.http import HttpResponseRedirect
 from django.urls import reverse
 from djstripe.models import Subscription, Customer, Product, Subscription, APIKey, Plan
 from django.utils.timezone import now
-
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
-
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-
 
 from django.contrib.auth import logout
 
