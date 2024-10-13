@@ -17,7 +17,7 @@ class UserSubscription(models.Model):
         ("TRIAL", "TRIAL"),
     ]
 
-    id = models.CharField(max_length=36, primary_key=True)
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="subscriptions"
     )
@@ -26,7 +26,7 @@ class UserSubscription(models.Model):
     subscription_id = models.CharField(max_length=36)
     subscription_type = models.CharField(max_length=20)
     name = models.CharField(max_length=100)
-    payment_info = models.JSONField(null=True, blank=True)
+    payment_info = models.TextField(null=True, blank=True)
     amount_allowed_usage = models.IntegerField()
     amount_used_usage = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
