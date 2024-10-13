@@ -221,7 +221,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
 }
 DJOSER = {
-    "LOGIN_FIELD": "username",
     "SERIALIZERS": {
         "user_create": "mainapps.accounts.serializers.CustomUserCreateSerializer",
     },
