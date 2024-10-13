@@ -17,7 +17,7 @@ class UserSubscription(models.Model):
         ("TRIAL", "TRIAL"),
     ]
 
-    id = models.CharField(max_length=36, primary_key=True)
+    id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="subscriptions"
     )
