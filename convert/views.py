@@ -31,18 +31,19 @@ from mainapps.payment.models import UserSubscription
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from django.views import View
 
 logging.basicConfig(level=logging.DEBUG)
 # Directory to store uploaded files
 UPLOAD_DIRECTORY = "uploads"
+TMP_FOLDER = "tmp"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
-from django.views.generic import TemplateView
-
-
-class IndexView(TemplateView):
-    template_name = "index.html"
-
+class IndexView(View):
+    def get(self, request, *args, **kwargs):
+        data = {'status': 'success', 'message': "It's working"}
+        return JsonResponse(data, status=200)
 
 class VideoUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -94,14 +95,12 @@ class VideoUploadView(APIView):
 
             process_video(video_info)
 
-            return Response(
-                {
-                    "message": "Files uploaded and processed successfully",
-                    "video_info": video_info,
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            # Call the function
+            delete_all_files(UPLOAD_DIRECTORY)
+            delete_all_files(TMP_FOLDER)
 
+            return Response({"message": "Files uploaded and processed successfully", "video_info": video_info}, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

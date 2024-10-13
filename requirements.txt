@@ -16,3 +16,4 @@ django-extensions
 mysqlclient
 django-storages
 djoser
+django-environ

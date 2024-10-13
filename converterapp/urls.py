@@ -30,7 +30,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('convert.urls')),
     path('accounts/', include('mainapps.accounts.urls', namespace='accounts')),
-    path('', include('mainapps.home.urls', namespace='home')),
+    # path('', include('mainapps.home.urls', namespace='home')),
     path('video/', include('mainapps.video.urls', namespace='video')),
     path('text/', include('mainapps.vidoe_text.urls', namespace='video_text')),
     path("stripe/", include("djstripe.urls", namespace="djstripe")),
