@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from mainapps.accounts.emails import send_user_password_email
-from mainapps.accounts.models import Credit
+from mainapps.accounts.models import Credit, User
 import stripe
 
 from django.contrib.auth import get_user_model
@@ -391,3 +391,37 @@ class CustomUserViewSet(UserViewSet):
         # Add custom behavior before saving
         super().perform_create(serializer)
         # Add any additional actions you want to take upon registration
+
+
+from django.http import JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
+import json
+
+@csrf_exempt
+@require_POST
+def change_password(request):
+    
+    try:
+        payload = json.loads(request.body)
+        email = payload.get('email')
+        new_password = payload.get('new_password')
+        print(f"new pasword {new_password}")
+        confirm_password = payload.get('confirm_password')
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "User does not exist"}, status=404)
+        
+        if new_password != confirm_password:
+            return JsonResponse({"error": "New password and confirm password do not match"}, status=400)
+        print(f"new pasword {new_password}")
+        print(f"new pasword hash {make_password(new_password)}")
+        
+        user.password = make_password(new_password)
+        user.save()
+        
+        return JsonResponse({"status": "success", "message": "Password has been updated successfully"}, status=200)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
