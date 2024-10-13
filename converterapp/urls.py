@@ -28,7 +28,7 @@ router.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', include('convert.urls')),
+    path('', include('convert.urls')),
     path('accounts/', include('mainapps.accounts.urls', namespace='accounts')),
     path('', include('mainapps.home.urls', namespace='home')),
     path('video/', include('mainapps.video.urls', namespace='video')),

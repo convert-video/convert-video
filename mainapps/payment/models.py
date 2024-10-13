@@ -26,7 +26,7 @@ class UserSubscription(models.Model):
     subscription_id = models.CharField(max_length=36)
     subscription_type = models.CharField(max_length=20)
     name = models.CharField(max_length=100)
-    payment_info = models.JSONField(null=True, blank=True)
+    payment_info = models.TextField(null=True, blank=True)
     amount_allowed_usage = models.IntegerField()
     amount_used_usage = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
