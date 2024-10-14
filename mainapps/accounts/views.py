@@ -388,6 +388,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 import json
+import re
+
 
 @csrf_exempt
 @require_POST
@@ -395,23 +397,64 @@ def change_password(request):
 
     try:
         payload = json.loads(request.body)
-        email = payload.get('email')
-        new_password = payload.get('new_password')
-        print(f"new pasword {new_password}")
-        confirm_password = payload.get('confirm_password')
-        try:
-            user = User.objects.get(email=email)
-        except ObjectDoesNotExist:
-            return JsonResponse({"error": "User does not exist"}, status=404)
+        email = payload.get("email")
+        new_password = payload.get("new_password")
+        confirm_password = payload.get("confirm_password")
+        
+        user = User.objects.get(email=email, is_first_password_set=False)
 
-        if new_password != confirm_password:
-            return JsonResponse({"error": "New password and confirm password do not match"}, status=400)
-        print(f"new pasword {new_password}")
-        print(f"new pasword hash {make_password(new_password)}")
+        validation_error = validate_password_data(email, new_password, confirm_password)
+        
+        if validation_error:
+            return validation_error
 
         user.password = make_password(new_password)
+        user.is_first_password_set = True
         user.save()
 
-        return JsonResponse({"status": "success", "message": "Password has been updated successfully"}, status=200)
+        return JsonResponse(
+            {"status": "success", "message": "Password has been updated successfully"},
+            status=200,
+        )
+
+    except ObjectDoesNotExist:
+        return JsonResponse(
+            {
+                "error": "User does not exist or has already been created in the system. Please contact admin for assistance."
+            },
+            status=404,
+        )
+
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+def validate_password_data(email, new_password, confirm_password):
+    errors = {}
+
+    if not email:
+        errors["email"] = "Email is required"
+    else:
+        email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+        if not re.match(email_regex, email):
+            errors["email"] = "Invalid email format"
+
+    if not new_password:
+        errors["new_password"] = "New password is required"
+    elif len(new_password) < 4:
+        errors["new_password"] = "The new password must be at least 4 characters long"
+
+    if not confirm_password:
+        errors["confirm_password"] = "Confirm password is required"
+    elif len(confirm_password) < 4:
+        errors["confirm_password"] = (
+            "The confirm password must be at least 4 characters long"
+        )
+
+    if new_password and confirm_password and new_password != confirm_password:
+        errors["password_mismatch"] = "New password and confirm password do not match"
+
+    if errors:
+        return JsonResponse({"errors": errors}, status=400)
+
+    return None
