@@ -11,6 +11,7 @@ from datetime import datetime
 import json
 import requests
 import logging
+from mainapps.accounts.emails import send_html_email
 
 logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 
@@ -46,6 +47,7 @@ def checkout_session_stripe(request):
             if created:
                 user.password = hashed_password
                 user.save()
+                notify_user_account_created(user_name, user_email)
 
             save_user_subscription(user, payload)
 
@@ -78,3 +80,22 @@ def save_user_subscription(user, payment_info):
     except Exception as e:
         logging.error(f"Failed to create UserSubscription: {str(e)}")
         raise Exception(str(e))
+
+
+def notify_user_account_created(user_name, user_email):
+    subject = "Your account has been successfully created"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    html_file = "accounts/account_created.html"
+    context = {
+        "user_name": user_name,
+        "user_email": user_email,
+        "password_reset_link": settings.SET_PASSWORD_URL,
+    }
+    send_html_email(
+        subject,
+        "Account Creation Notification",
+        from_email,
+        user_email,
+        html_file,
+        context,
+    )
