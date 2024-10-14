@@ -7,6 +7,8 @@ from moviepy.editor import (
     AudioFileClip, ColorClip, CompositeAudioClip, CompositeVideoClip, concatenate_videoclips,
     TextClip, VideoFileClip, vfx, ImageClip
 )
+from django.conf import settings
+
 import tempfile
 from pydub import AudioSegment
 from moviepy.video.fx.crop import crop
@@ -445,6 +447,6 @@ def process_video(video_info):
     final_video = concatenate_videoclips(video_segments)
 
     video_id = video_info["video_id"]
-    output_file = Path(os.path.join(os.getcwd(), 'static', 'final', f"{video_id}.mp4"))
+    output_file = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_id}.mp4"))
     final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
     logging.info(f"Generated output video: {output_file}")

@@ -100,22 +100,11 @@ class VideoUploadView(APIView):
 
             process_video(video_info)
 
-
-            return Response(
-                {
-                    "message": "Files uploaded and processed successfully",
-                    "video_info": video_info,
-                },
-                status=status.HTTP_201_CREATED,
-            )
-
-
             # Call the function
             delete_all_files(UPLOAD_DIRECTORY)
             delete_all_files(TMP_FOLDER)
 
             return Response({"message": "Files uploaded and processed successfully", "video_info": video_info}, status=status.HTTP_201_CREATED)
-        
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -128,7 +117,7 @@ class DownloadVideoView(APIView):
     def get(self, request, video_id):
         self.validate_before_download(request)
         try:
-            video_path = os.path.join(os.getcwd(), "static", "final", f"{video_id}.mp4")
+            video_path = os.path.join(settings.MEDIA_ROOT, "final", f"{video_id}.mp4")
             # video_path = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_id}.mp4"))
             print("", video_path)
             with open(video_path, "rb") as video_file:

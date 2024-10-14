@@ -170,7 +170,7 @@ REST_FRAMEWORK = {
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Media files (Uploaded files)
 MEDIA_URL = "/media/"
@@ -181,9 +181,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 # This is where static files will be collected
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+# ]
 
 DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
 # STRIPE_LIVE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Q8ceGCQ2Ys80qlSxSLi49Y18pn59ayq5V2Y4UMVQ4ErPpoGeuIQMQdFcAXZTH62saDSsQsiIfEb5JyhLxbIPGGt00pXV7c6b6')
