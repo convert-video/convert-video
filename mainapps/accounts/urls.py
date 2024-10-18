@@ -9,7 +9,7 @@ urlpatterns=[
     path('confirm-subscription/',subscription_confirm,name='subscription_confirm'),
     path('logout/', logout_view, name='logout'),  
     path('profile/', subscription_details, name='subscription_details'),
-    path('change-password/', change_password, name='change-password')  
+    path('change-password/', change_password, name='change-password'),
 ]
 
 

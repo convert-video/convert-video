@@ -21,16 +21,18 @@ import stripe
 from django.contrib import messages
 from django.urls import reverse
 from djstripe.models import Subscription, Customer, Product, Subscription, APIKey, Plan
-from django.utils.timezone import now
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
-
+from djoser.views import TokenCreateView
 from django.contrib.auth import logout
-
+from rest_framework.response import Response
+from rest_framework import status
+from djoser.views import UserViewSet
+from .serializers import CustomUserCreateSerializer, CustomLoginSerializer
 
 def logout_view(request):
     """
@@ -369,11 +371,6 @@ def subscription_details(request):
         request, "accounts/details.html"
     )  # In case the user has no subscription
 
-
-from djoser.views import UserViewSet
-from .serializers import CustomUserCreateSerializer
-
-
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserCreateSerializer
 
@@ -400,8 +397,12 @@ def change_password(request):
         email = payload.get("email")
         new_password = payload.get("new_password")
         confirm_password = payload.get("confirm_password")
-        
-        user = User.objects.get(email=email, is_first_password_set=False)
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            return JsonResponse({"error": "No account found with the provided email address."}, status=404)
+        elif user.is_first_password_set:
+            return JsonResponse({"error": "This account has already set its initial password. Please log in."}, status=400)
 
         validation_error = validate_password_data(email, new_password, confirm_password)
         
@@ -458,3 +459,23 @@ def validate_password_data(email, new_password, confirm_password):
         return JsonResponse({"errors": errors}, status=400)
 
     return None
+
+from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import AuthenticationFailed
+class CustomLoginView(TokenCreateView):
+    serializer_class = CustomLoginSerializer
+
+    def _action(self, serializer):
+        # The user is set in the validated data by the serializer
+        user = serializer.validated_data.get('user')
+
+        if user is None:
+            raise AuthenticationFailed('User authentication failed')
+
+        # Manually retrieve or create the auth token for the user
+        token, created = Token.objects.get_or_create(user=user)
+
+        # Return the token in the desired JSON format
+        return Response({
+            'auth_token': token.key
+        }, status=status.HTTP_200_OK)

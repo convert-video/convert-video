@@ -21,7 +21,7 @@ from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 
 from mainapps.accounts.views import CustomUserCreateSerializer
-from mainapps.accounts.views import  CustomUserViewSet
+from mainapps.accounts.views import  CustomUserViewSet, CustomLoginView
 
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet)
@@ -35,6 +35,10 @@ urlpatterns = [
     path('text/', include('mainapps.vidoe_text.urls', namespace='video_text')),
     path("stripe/", include("djstripe.urls", namespace="djstripe")),
     path("auth/", include("django.contrib.auth.urls")),
+    
+    # Override Djoser's login route first with your custom login view
+    path('auth/token/login/', CustomLoginView.as_view(), name='custom-login'),
+
     re_path(r"^auth/", include("djoser.urls")),
     re_path(r"^auth/", include("djoser.urls.authtoken")),
     path("payments/", include("mainapps.payment.urls")),
