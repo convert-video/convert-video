@@ -37,6 +37,7 @@ logging.basicConfig(level=logging.DEBUG)
 UPLOAD_DIRECTORY = "uploads"
 TMP_FOLDER = "tmp"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
+os.makedirs(TMP_FOLDER, exist_ok=True)
 
 from django.views.generic import TemplateView
 
@@ -117,6 +118,8 @@ class DownloadVideoView(APIView):
     def get(self, request, video_id):
         self.validate_before_download(request)
         try:
+            video_path = os.path.join(os.getcwd(), "static", "final", f"{video_id}.mp4")
+
             video_path = os.path.join(settings.MEDIA_ROOT, "final", f"{video_id}.mp4")
             # video_path = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_id}.mp4"))
             print("", video_path)

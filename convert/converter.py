@@ -141,12 +141,13 @@ def get_segments_using_srt(video: VideoFileClip, subtitles: pysrt.SubRipFile):
             video_segments.append(video_segment)
             previous_end = end
 
+
     # If there's any remaining video after the last subtitle, add it
-    if previous_end < video_duration:
-        logging.debug(f"Adding final non-subtitled segment from {previous_end} to {video_duration}")
-        video_segment = video.subclip(previous_end, video_duration)
-        subtitle_segments.append(None)
-        video_segments.append(video_segment)
+    # if previous_end < video_duration:
+    #     logging.debug(f"Adding final non-subtitled segment from {previous_end} to {video_duration}")
+    #     video_segment = video.subclip(previous_end, video_duration)
+    #     subtitle_segments.append(None)
+    #     video_segments.append(video_segment)
 
     logging.info(f"Total video segments: {len(video_segments)}")
     logging.info(f"Total subtitle segments: {len(subtitle_segments)}")
@@ -448,5 +449,7 @@ def process_video(video_info):
 
     video_id = video_info["video_id"]
     output_file = Path(os.path.join(settings.MEDIA_ROOT, 'final', f"{video_id}.mp4"))
+    output_file = Path(os.path.join(os.getcwd(), 'static', 'final', f"{video_id}.mp4"))
+
     final_video.write_videofile(output_file.as_posix(), codec="libx264", audio_codec="aac")
     logging.info(f"Generated output video: {output_file}")
