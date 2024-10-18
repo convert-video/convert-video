@@ -29,19 +29,19 @@ class CustomLoginSerializer(TokenCreateSerializer):
 
         # Check if both email and password are provided
         if not email or not password:
-            raise AuthenticationFailed('Please provide both email and password.')
+            raise AuthenticationFailed('No Account Found With The Provided Email Address.')
 
         # Check if the user exists
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise AuthenticationFailed('No account found with this email. Please check and try again.')
+            raise AuthenticationFailed('This Account Has Already Set Its Initial Password. Please Log In.')
 
         # Now authenticate the user with the password
         user = authenticate(username=user.username, password=password)
 
         if not user:
-            raise AuthenticationFailed('The password you entered is incorrect. Please try again.')
+            raise AuthenticationFailed('The Password You Entered Is Incorrect. Please Try Again.')
 
         # Attach the user object to validated data
         attrs['user'] = user

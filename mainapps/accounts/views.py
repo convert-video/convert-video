@@ -400,9 +400,9 @@ def change_password(request):
         user = User.objects.filter(email=email).first()
 
         if not user:
-            return JsonResponse({"error": "No account found with the provided email address."}, status=404)
+            return JsonResponse({"error": "No Account Found With The Provided Email Address."}, status=404)
         elif user.is_first_password_set:
-            return JsonResponse({"error": "This account has already set its initial password. Please log in."}, status=400)
+            return JsonResponse({"error": "This Account Has Already Set Its Initial Password. Please Log In."}, status=400)
 
         validation_error = validate_password_data(email, new_password, confirm_password)
         
@@ -414,14 +414,14 @@ def change_password(request):
         user.save()
 
         return JsonResponse(
-            {"status": "success", "message": "Password has been updated successfully"},
+            {"status": "success", "message": "Password Has Been Updated Successfully"},
             status=200,
         )
 
     except ObjectDoesNotExist:
         return JsonResponse(
             {
-                "error": "User does not exist or has already been created in the system. Please contact admin for assistance."
+                "error": "User Does Not Exist Or Has Already Been Created In The System. Please Contact Admin For Assistance."
             },
             status=404,
         )
@@ -470,7 +470,7 @@ class CustomLoginView(TokenCreateView):
         user = serializer.validated_data.get('user')
 
         if user is None:
-            raise AuthenticationFailed('User authentication failed')
+            raise AuthenticationFailed('User Authentication Failed')
 
         # Manually retrieve or create the auth token for the user
         token, created = Token.objects.get_or_create(user=user)
