@@ -400,9 +400,9 @@ def change_password(request):
         user = User.objects.filter(email=email).first()
 
         if not user:
-            return JsonResponse({"error": "No Account Found With The Provided Email Address."}, status=404)
+            return JsonResponse({"error": "Please Provide Both Email And Password."}, status=404)
         elif user.is_first_password_set:
-            return JsonResponse({"error": "This Account Has Already Set Its Initial Password. Please Log In."}, status=400)
+            return JsonResponse({"error": "No Account Found With This Email. Please Check And Try Again."}, status=400)
 
         validation_error = validate_password_data(email, new_password, confirm_password)
         
